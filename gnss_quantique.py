@@ -2,8 +2,8 @@ import folium
 import numpy as np
 
 # Coordonnées GPS avec certaines inconnues
-lat_min = 42.000000
-lat_max = 49.999999
+lat_min = 42.000004
+lat_max = 49.999994
 lon_min = -5.000001
 lon_max = 8.000001
 
