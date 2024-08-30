@@ -8,8 +8,8 @@ import numpy as np
 # lon_max = 6.123456
 
 # square search area
-lat_min = 42.000004
-lat_max = 49.999994
+lat_min = 42.000074
+lat_max = 49.999974
 lon_min = -5.000000
 lon_max = 8.000000
 
@@ -50,7 +50,7 @@ for lat in lat_points:
     for lon in lon_points:
         folium.Marker(
             [lat, lon],
-            popup=f"Lat: {lat:.4f}, Lon: {lon:.4f}",
+            popup=f"Lat: {lat:.6f}, Lon: {lon:.6f}",
             icon=folium.Icon(color="blue", icon="info-sign")
         ).add_to(m)
 
