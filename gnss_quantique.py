@@ -2,23 +2,31 @@ import folium
 import numpy as np
 import math
 
-# Hypothèses pour accurate details_data
-# LAT_MIN = 47.023456
-# LAT_MAX = 47.923456
-# LON_MIN = 6.123456
-# LON_MAX = 6.123456
 
-# square search area
-LAT_MIN = 42.000074
-LAT_MAX = 49.999974
-LON_MIN = 0.000000
-LON_MAX = 8.000000
-
-DETAILS_DATA = False
+class DetailedData:
+    """Class representing the detailed search area."""
+    LAT_MIN = 47.023456
+    LAT_MAX = 47.923456
+    LON_MIN = 6.023456
+    LON_MAX = 6.923456
 
 
-def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, details_data):
-    if details_data:
+class SquareArea:
+    """Class representing the broader square search area."""
+    LAT_MIN = 42.000074
+    LAT_MAX = 49.999974
+    LON_MIN = 0.000000
+    LON_MAX = 8.000000
+
+
+def get_position(use_detailed_data):
+    """Returns the position class based on the configuration."""
+    return DetailedData() if use_detailed_data else SquareArea()
+
+
+def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, use_detailed_data):
+    """Calculates grid points for latitude and longitude based on the given area."""
+    if use_detailed_data:
         lat_diff_str, lon_diff_str = calculate_diffs(lat_min, lat_max, lon_min, lon_max)
         num_points_lat = calculate_points(lat_diff_str)
         num_points_lon = calculate_points(lon_diff_str)
@@ -30,32 +38,28 @@ def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, details_data):
 
 
 def calculate_diffs(lat_min, lat_max, lon_min, lon_max):
-    lat_diff = round(lat_max - lat_min, 6)
-    lon_diff = round(lon_max - lon_min, 6)
-
-    lat_diff_micro = lat_diff * 10 ** 6
-    lon_diff_micro = lon_diff * 10 ** 6
-
-    lat_diff_str = str(int(lat_diff_micro))
-    lon_diff_str = str(int(lon_diff_micro))
-
-    return lat_diff_str, lon_diff_str
+    """Calculates differences in latitude and longitude as strings of microdegrees."""
+    lat_diff_micro = int(round((lat_max - lat_min) * 1e6))
+    lon_diff_micro = int(round((lon_max - lon_min) * 1e6))
+    return str(lat_diff_micro), str(lon_diff_micro)
 
 
 def calculate_points(diff_str):
+    """Calculates the number of points based on the difference string."""
     points_list = [int(digit) + 1 for digit in diff_str if digit != '0']
     return max(math.prod(points_list), 1)
 
 
 def initialize_map(center, zoom=6):
+    """Initializes and returns a folium map centered at the given coordinates."""
     return folium.Map(location=center, zoom_start=zoom)
 
 
-def add_grid_to_map(m, lat_points, lon_points):
-    mid_lon = (LON_MIN + LON_MAX) / 2
-    mid_lat = (LAT_MIN + LAT_MAX) / 2
+def add_grid_to_map(m, lat_points, lon_points, position):
+    """Adds grid points and lines to the map."""
+    mid_lon = (position.LON_MIN + position.LON_MAX) / 2
+    mid_lat = (position.LAT_MIN + position.LAT_MAX) / 2
 
-    # Add grid points to the map with labels
     for lat in lat_points:
         for lon in lon_points:
             folium.Marker(
@@ -64,8 +68,7 @@ def add_grid_to_map(m, lat_points, lon_points):
                 icon=folium.Icon(color="blue", icon="info-sign")
             ).add_to(m)
 
-    for lat in lat_points:
-        folium.PolyLine([(lat, LON_MIN), (lat, LON_MAX)], color="blue", weight=1).add_to(m)
+        folium.PolyLine([(lat, position.LON_MIN), (lat, position.LON_MAX)], color="blue", weight=1).add_to(m)
         folium.Marker(
             [lat, mid_lon],
             icon=folium.DivIcon(
@@ -73,7 +76,7 @@ def add_grid_to_map(m, lat_points, lon_points):
         ).add_to(m)
 
     for lon in lon_points:
-        folium.PolyLine([(LAT_MIN, lon), (LAT_MAX, lon)], color="green", weight=1).add_to(m)
+        folium.PolyLine([(position.LAT_MIN, lon), (position.LAT_MAX, lon)], color="green", weight=1).add_to(m)
         folium.Marker(
             [mid_lat, lon],
             icon=folium.DivIcon(
@@ -82,6 +85,7 @@ def add_grid_to_map(m, lat_points, lon_points):
 
 
 def add_markers_and_lines(m):
+    """Adds specific markers and lines between them to the map."""
     specific_points = [
         (46.15878834400968, -1.2718925504584946, "Enigme 1 chez Ré monde", 'fa-solid fa-1'),
         (50.721787866105565, 2.5337913136757573, "Enigme 2 les 3 Citrouilles", 'fa-solid fa-2')
@@ -94,7 +98,15 @@ def add_markers_and_lines(m):
             icon=folium.Icon(color='red', icon=icon)
         ).add_to(m)
 
-    # Trace une ligne rouge entre les deux points spécifiques
+        folium.Circle(
+            radius=400000,  # Radius in meters
+            location=(lat, lon),
+            color='red',
+            fill=True,
+            fill_opacity=0,
+            weight=1
+        ).add_to(m)
+
     folium.PolyLine(
         locations=[(specific_points[0][0], specific_points[0][1]), (specific_points[1][0], specific_points[1][1])],
         color="red",
@@ -103,24 +115,22 @@ def add_markers_and_lines(m):
 
 
 def main():
-    # Calcul des points de grille
-    lat_points, lon_points = calculate_grid_points(LAT_MIN, LAT_MAX, LON_MIN, LON_MAX, DETAILS_DATA)
+    """Main function to generate the map with grid and specific markers."""
+    use_detailed_data = False
+    position = get_position(use_detailed_data)
 
-    # Calcul du centre de la carte
-    map_center = [(LAT_MIN + LAT_MAX) / 2, (LON_MIN + LON_MAX) / 2]
+    lat_points, lon_points = calculate_grid_points(
+        position.LAT_MIN, position.LAT_MAX, position.LON_MIN, position.LON_MAX, use_detailed_data
+    )
 
-    # Initialisation de la carte
+    map_center = [(position.LAT_MIN + position.LAT_MAX) / 2, (position.LON_MIN + position.LON_MAX) / 2]
     m = initialize_map(map_center)
 
-    # Ajout des points de grille
-    add_grid_to_map(m, lat_points, lon_points)
-
-    # Ajout des marqueurs spécifiques et de la ligne entre eux
+    add_grid_to_map(m, lat_points, lon_points, position)
     add_markers_and_lines(m)
 
-    # Sauvegarde de la carte
     m.save("gnss_quantique.html")
-    print("The map with the grid and specific marker has been generated and saved as 'gnss_quantique.html'.")
+    print("The map with the grid and specific markers has been generated and saved as 'gnss_quantique.html'.")
 
 
 if __name__ == "__main__":
