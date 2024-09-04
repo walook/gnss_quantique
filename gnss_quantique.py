@@ -7,16 +7,16 @@ class DetailedData:
     """Class representing the detailed search area."""
     LAT_MIN = 47.023456
     LAT_MAX = 47.923456
-    LON_MIN = 6.023456
+    LON_MIN = 0.023456
     LON_MAX = 6.923456
 
 
 class SquareArea:
     """Class representing the broader square search area."""
-    LAT_MIN = 42.000074
-    LAT_MAX = 49.999974
-    LON_MIN = 0.000000
-    LON_MAX = 8.000000
+    LAT_MIN = 47.000004
+    LAT_MAX = 49.999994
+    LON_MIN = 0.000074
+    LON_MAX = 8.000074
 
 
 def get_position(use_detailed_data):
@@ -88,7 +88,21 @@ def add_markers_and_lines(m):
     """Adds specific markers and lines between them to the map."""
     specific_points = [
         (46.15878834400968, -1.2718925504584946, "Enigme 1 chez Ré monde", 'fa-solid fa-1'),
-        (50.721787866105565, 2.5337913136757573, "Enigme 2 les 3 Citrouilles", 'fa-solid fa-2')
+        (50.721787866105565, 2.5337913136757573, "Enigme 2 les 3 Citrouilles", 'fa-solid fa-2'),
+        (47.47327153775195, -0.5550084763123877, "Enigme 3 La Glacerie d'Anjou", 'fa-solid fa-3'),
+        (45.83521855422578, 1.233482146409676, "Enigme 4 Haute-Vienne", 'fa-solid fa-4'),
+        (43.60970866810686, 3.8734816800644714, "Enigme 5 Montpellier", 'fa-solid fa-5'),
+        (49.7598022614082, 4.762536987539555, "Enigme 6 Les Ardennes", 'fa-solid fa-6'),
+        (43.04395371366447, 1.6122175124976217, "Enigme 7 Ariège", 'fa-solid fa-7'),
+        (48.844205330061065, 2.4409678344258494, "Enigme 8 Île-de-France", 'fa-solid fa-8'),
+        (47.31923053435358, 5.151234077316385, "Enigme 9 Côte-d'Or", 'fa-solid fa-9'),
+        (48.57201706001636, 7.763461001088638, "Enigme 10 Entre Nancy et Strasbourg", 'fa-solid fa-a'),
+        (47.39295503316493, 0.7253534677575671, "Enigme 11 Indre-et-Loire", 'fa-solid fa-b'),
+        (48.01121029245369, -3.942390947484212, "Enigme 12 Bretagne", 'fa-solid fa-c'),
+        (46.988458091474726, 6.936595661085478, "Enigme 13 Suisse", 'fa-solid fa-d'),
+        (45.765560847282806, 4.828959507897815, "Enigme 14 Lyon", 'fa-solid fa-e'),
+
+
     ]
 
     for lat, lon, popup, icon in specific_points:
@@ -99,19 +113,21 @@ def add_markers_and_lines(m):
         ).add_to(m)
 
         folium.Circle(
-            radius=400000,  # Radius in meters
+            radius=50000,  # Radius in meters
             location=(lat, lon),
             color='red',
             fill=True,
-            fill_opacity=0,
+            fill_opacity=0.1,
             weight=1
         ).add_to(m)
 
-    folium.PolyLine(
-        locations=[(specific_points[0][0], specific_points[0][1]), (specific_points[1][0], specific_points[1][1])],
-        color="red",
-        weight=2,
-    ).add_to(m)
+    for i in range(0, len(specific_points) - 1):
+        folium.PolyLine(
+            locations=[(specific_points[i][0], specific_points[i][1]), (specific_points[i+1][0], specific_points[i+1][1])],
+            color="red",
+            weight=1,
+            dash_array="5, 5",
+        ).add_to(m)
 
 
 def main():
