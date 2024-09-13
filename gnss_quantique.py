@@ -27,9 +27,6 @@ def get_position(use_detailed_data):
 def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, use_detailed_data):
     """Calculates grid points for latitude and longitude based on the given area."""
     if use_detailed_data:
-def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, use_detailed_data):
-    """Calculates grid points for latitude and longitude based on the given area."""
-    if use_detailed_data:
         lat_diff_str, lon_diff_str = calculate_diffs(lat_min, lat_max, lon_min, lon_max)
         num_points_lat = calculate_points(lat_diff_str)
         num_points_lon = calculate_points(lon_diff_str)
@@ -45,14 +42,9 @@ def calculate_diffs(lat_min, lat_max, lon_min, lon_max):
     lat_diff_micro = int(round((lat_max - lat_min) * 1e6))
     lon_diff_micro = int(round((lon_max - lon_min) * 1e6))
     return str(lat_diff_micro), str(lon_diff_micro)
-    """Calculates differences in latitude and longitude as strings of microdegrees."""
-    lat_diff_micro = int(round((lat_max - lat_min) * 1e6))
-    lon_diff_micro = int(round((lon_max - lon_min) * 1e6))
-    return str(lat_diff_micro), str(lon_diff_micro)
 
 
 def calculate_points(diff_str):
-    """Calculates the number of points based on the difference string."""
     """Calculates the number of points based on the difference string."""
     points_list = [int(digit) + 1 for digit in diff_str if digit != '0']
     return max(math.prod(points_list), 1)
@@ -60,14 +52,9 @@ def calculate_points(diff_str):
 
 def initialize_map(center, zoom=6):
     """Initializes and returns a folium map centered at the given coordinates."""
-    """Initializes and returns a folium map centered at the given coordinates."""
     return folium.Map(location=center, zoom_start=zoom)
 
 
-def add_grid_to_map(m, lat_points, lon_points, position):
-    """Adds grid points and lines to the map."""
-    mid_lon = (position.LON_MIN + position.LON_MAX) / 2
-    mid_lat = (position.LAT_MIN + position.LAT_MAX) / 2
 def add_grid_to_map(m, lat_points, lon_points, position):
     """Adds grid points and lines to the map."""
     mid_lon = (position.LON_MIN + position.LON_MAX) / 2
@@ -82,7 +69,6 @@ def add_grid_to_map(m, lat_points, lon_points, position):
             ).add_to(m)
 
         folium.PolyLine([(lat, position.LON_MIN), (lat, position.LON_MAX)], color="blue", weight=1).add_to(m)
-        folium.PolyLine([(lat, position.LON_MIN), (lat, position.LON_MAX)], color="blue", weight=1).add_to(m)
         folium.Marker(
             [lat, mid_lon],
             icon=folium.DivIcon(
@@ -90,7 +76,6 @@ def add_grid_to_map(m, lat_points, lon_points, position):
         ).add_to(m)
 
     for lon in lon_points:
-        folium.PolyLine([(position.LAT_MIN, lon), (position.LAT_MAX, lon)], color="green", weight=1).add_to(m)
         folium.PolyLine([(position.LAT_MIN, lon), (position.LAT_MAX, lon)], color="green", weight=1).add_to(m)
         folium.Marker(
             [mid_lat, lon],
@@ -100,7 +85,6 @@ def add_grid_to_map(m, lat_points, lon_points, position):
 
 
 def add_markers_and_lines(m):
-    """Adds specific markers and lines between them to the map."""
     """Adds specific markers and lines between them to the map."""
     specific_points = [
         (46.15878834400968, -1.2718925504584946, "Enigme 1 chez Ré monde", 'fa-solid fa-1'),
@@ -144,49 +128,24 @@ def add_markers_and_lines(m):
             weight=1,
             dash_array="5, 5",
         ).add_to(m)
-        folium.Circle(
-            radius=50000,  # Radius in meters
-            location=(lat, lon),
-            color='red',
-            fill=True,
-            fill_opacity=0.1,
-            weight=1
-        ).add_to(m)
-
-    for i in range(0, len(specific_points) - 1):
-        folium.PolyLine(
-            locations=[(specific_points[i][0], specific_points[i][1]), (specific_points[i+1][0], specific_points[i+1][1])],
-            color="red",
-            weight=1,
-            dash_array="5, 5",
-        ).add_to(m)
 
 
 def main():
     """Main function to generate the map with grid and specific markers."""
     use_detailed_data = False
     position = get_position(use_detailed_data)
-    """Main function to generate the map with grid and specific markers."""
-    use_detailed_data = False
-    position = get_position(use_detailed_data)
 
     lat_points, lon_points = calculate_grid_points(
         position.LAT_MIN, position.LAT_MAX, position.LON_MIN, position.LON_MAX, use_detailed_data
     )
-    lat_points, lon_points = calculate_grid_points(
-        position.LAT_MIN, position.LAT_MAX, position.LON_MIN, position.LON_MAX, use_detailed_data
-    )
 
-    map_center = [(position.LAT_MIN + position.LAT_MAX) / 2, (position.LON_MIN + position.LON_MAX) / 2]
     map_center = [(position.LAT_MIN + position.LAT_MAX) / 2, (position.LON_MIN + position.LON_MAX) / 2]
     m = initialize_map(map_center)
 
     add_grid_to_map(m, lat_points, lon_points, position)
-    add_grid_to_map(m, lat_points, lon_points, position)
     add_markers_and_lines(m)
 
     m.save("gnss_quantique.html")
-    print("The map with the grid and specific markers has been generated and saved as 'gnss_quantique.html'.")
     print("The map with the grid and specific markers has been generated and saved as 'gnss_quantique.html'.")
 
 
