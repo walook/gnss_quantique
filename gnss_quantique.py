@@ -13,8 +13,8 @@ class DetailedData:
 
 class SquareArea:
     """Class representing the broader square search area."""
-    LAT_MIN = 47.000884
-    LAT_MAX = 49.999884
+    LAT_MIN = 47.007884
+    LAT_MAX = 49.997884
     LON_MIN = 0.000675
     LON_MAX = 8.000675
 
@@ -93,7 +93,7 @@ def add_markers_and_lines(m):
         (46.141782734484735, 1.879348485208694, "Enigme 4 La Pierre Mystere", 'fa-solid fa-4'),
         (43.61277522184278, 3.879513380408009, "Enigme 5 AlphaNef", 'fa-solid fa-5'),
         (49.67185797928755, 4.842056015264417, "Enigme 6 Chapelle Saint-Roger", 'fa-solid fa-6'),
-        (43.04395371366447, 1.6122175124976217, "Enigme 7 Ariège", 'fa-solid fa-7'),
+        (43.12303479835759, 1.6946271347407884, "Enigme 7 Librairie Le Bleu du Ciel", 'fa-solid fa-7'),
         (48.844205330061065, 2.4409678344258494, "Enigme 8 Île-de-France", 'fa-solid fa-8'),
         (47.31923053435358, 5.151234077316385, "Enigme 9 Côte-d'Or", 'fa-solid fa-9'),
         (48.57201706001636, 7.763461001088638, "Enigme 10 Entre Nancy et Strasbourg", 'fa-solid fa-a'),
