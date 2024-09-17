@@ -5,18 +5,23 @@ import math
 
 class DetailedData:
     """Class representing the detailed search area."""
-    LAT_MIN = 47.923884
-    LAT_MAX = 49.923884
-    LON_MIN = 0.923675
-    LON_MAX = 8.923675
+    LAT_MIN = 45.007884
+    LAT_MAX = 49.007884
+    LON_MIN = -1.006675
+    LON_MAX = 8.006675
 
 
 class SquareArea:
     """Class representing the broader square search area."""
     LAT_MIN = 47.007884
     LAT_MAX = 49.997884
-    LON_MIN = 0.000675
-    LON_MAX = 8.000675
+    LON_MIN = 0.006674
+    LON_MAX = 8.006674
+    #reverse
+    #LAT_MIN = 44.887000
+    #LAT_MAX = 44.887999
+    #LON_MIN = 4.766000
+    #LON_MAX = 4.766999
 
 
 def get_position(use_detailed_data):
@@ -33,20 +38,26 @@ def calculate_grid_points(lat_min, lat_max, lon_min, lon_max, use_detailed_data)
     else:
         num_points_lat = 2
         num_points_lon = 2
-
+    print(f"num_points_lat: {num_points_lat}\tnum_points_lon: {num_points_lon}")
     return np.linspace(lat_min, lat_max, num_points_lat), np.linspace(lon_min, lon_max, num_points_lon)
 
 
 def calculate_diffs(lat_min, lat_max, lon_min, lon_max):
     """Calculates differences in latitude and longitude as strings of microdegrees."""
     lat_diff_micro = int(round((lat_max - lat_min) * 1e6))
-    lon_diff_micro = int(round((lon_max - lon_min) * 1e6))
+
+    if lon_min < 0:
+        lon_diff_micro = int(round((lon_max - abs(lon_min)) * 1e6))
+    else:
+        lon_diff_micro = int(round((lon_max - lon_min) * 1e6))
+    print(f"lat_diff_micro: {lat_diff_micro}\tlon_diff_micro: {lon_diff_micro}")
     return str(lat_diff_micro), str(lon_diff_micro)
 
 
 def calculate_points(diff_str):
     """Calculates the number of points based on the difference string."""
     points_list = [int(digit) + 1 for digit in diff_str if digit != '0']
+    print(f"diff_str={diff_str}\tpoints_list={points_list}")
     return max(math.prod(points_list), 1)
 
 
@@ -94,9 +105,9 @@ def add_markers_and_lines(m):
         (43.61277522184278, 3.879513380408009, "Enigme 5 AlphaNef", 'fa-solid fa-5'),
         (49.67185797928755, 4.842056015264417, "Enigme 6 Chapelle Saint-Roger", 'fa-solid fa-6'),
         (43.12303479835759, 1.6946271347407884, "Enigme 7 Librairie Le Bleu du Ciel", 'fa-solid fa-7'),
-        (48.844205330061065, 2.4409678344258494, "Enigme 8 Île-de-France", 'fa-solid fa-8'),
-        (47.31923053435358, 5.151234077316385, "Enigme 9 Côte-d'Or", 'fa-solid fa-9'),
-        (48.57201706001636, 7.763461001088638, "Enigme 10 Entre Nancy et Strasbourg", 'fa-solid fa-a'),
+        (47.35711347592077, 4.9650404744590455, "Enigme 8 La Porte du Diable", 'fa-solid fa-8'),
+        (48.68686019954641, 6.1723849092159, "Enigme 9 Entre Nancy et Strasbourg", 'fa-solid fa-9'),
+        (48.85653365477824, 2.348834898952895, "Enigme 10 Ile de France", 'fa-solid fa-a'),
         (47.39295503316493, 0.7253534677575671, "Enigme 11 Indre-et-Loire", 'fa-solid fa-b'),
         (48.01121029245369, -3.942390947484212, "Enigme 12 Bretagne", 'fa-solid fa-c'),
         (46.988458091474726, 6.936595661085478, "Enigme 13 Suisse", 'fa-solid fa-d'),
