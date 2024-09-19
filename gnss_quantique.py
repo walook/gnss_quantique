@@ -5,16 +5,16 @@ import math
 
 class DetailedData:
     """Class representing the detailed search area."""
-    LAT_MIN = 45.007884
-    LAT_MAX = 49.007884
+    LAT_MIN = 45.027884
+    LAT_MAX = 49.927884
     LON_MIN = -1.006675
-    LON_MAX = 8.006675
+    LON_MAX = 8.096675
 
 
 class SquareArea:
     """Class representing the broader square search area."""
-    LAT_MIN = 47.007884
-    LAT_MAX = 49.997884
+    LAT_MIN = 47.027884
+    LAT_MAX = 49.927884
     LON_MIN = 0.006674
     LON_MAX = 8.006674
     #reverse
@@ -106,7 +106,7 @@ def add_markers_and_lines(m):
         (49.67185797928755, 4.842056015264417, "Enigme 6 Chapelle Saint-Roger", 'fa-solid fa-6'),
         (43.12303479835759, 1.6946271347407884, "Enigme 7 Librairie Le Bleu du Ciel", 'fa-solid fa-7'),
         (47.35711347592077, 4.9650404744590455, "Enigme 8 La Porte du Diable", 'fa-solid fa-8'),
-        (48.68686019954641, 6.1723849092159, "Enigme 9 Entre Nancy et Strasbourg", 'fa-solid fa-9'),
+        (48.51271190767063, 7.164272246565264, "Enigme 9 Temple du Donon", 'fa-solid fa-9'),
         (48.85653365477824, 2.348834898952895, "Enigme 10 Ile de France", 'fa-solid fa-a'),
         (47.39295503316493, 0.7253534677575671, "Enigme 11 Indre-et-Loire", 'fa-solid fa-b'),
         (48.01121029245369, -3.942390947484212, "Enigme 12 Bretagne", 'fa-solid fa-c'),
