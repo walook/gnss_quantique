@@ -9,8 +9,8 @@ class DetailedData:
     """Class representing the detailed search area."""
     LAT_MIN = 45.027884
     LAT_MAX = 49.927884
-    LON_MIN = 0.086675
-    LON_MAX = 8.986675
+    LON_MIN = 0.086674
+    LON_MAX = 8.986674
 
 
 class SquareArea:
