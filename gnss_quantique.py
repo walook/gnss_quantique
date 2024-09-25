@@ -1,27 +1,24 @@
 import folium
 import numpy as np
 import math
+import json
+from shapely.geometry import Point, shape
 
 
 class DetailedData:
     """Class representing the detailed search area."""
     LAT_MIN = 45.027884
     LAT_MAX = 49.927884
-    LON_MIN = -1.006675
-    LON_MAX = 8.096675
+    LON_MIN = 0.086675
+    LON_MAX = 8.986675
 
 
 class SquareArea:
     """Class representing the broader square search area."""
     LAT_MIN = 47.027884
     LAT_MAX = 49.927884
-    LON_MIN = 0.006674
-    LON_MAX = 8.006674
-    #reverse
-    #LAT_MIN = 44.887000
-    #LAT_MAX = 44.887999
-    #LON_MIN = 4.766000
-    #LON_MAX = 4.766999
+    LON_MIN = 0.086674
+    LON_MAX = 8.086674
 
 
 def get_position(use_detailed_data):
@@ -61,41 +58,80 @@ def calculate_points(diff_str):
     return max(math.prod(points_list), 1)
 
 
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """Calculates the great-circle distance between two points on the Earth using the Haversine formula."""
+    R = 6371  # Radius of the Earth in kilometers
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    c = 2 * math.asin(math.sqrt(a))
+
+    return R * c  # Distance in kilometers
+
+
 def initialize_map(center, zoom=6):
     """Initializes and returns a folium map centered at the given coordinates."""
     return folium.Map(location=center, zoom_start=zoom)
 
 
-def add_grid_to_map(m, lat_points, lon_points, position):
-    """Adds grid points and lines to the map."""
+def add_grid_to_map(m, lat_points, lon_points, position, specific_points, radius, geojson_polygons, grid):
+    """Adds grid points and lines to the map, excluding those within a radius of specific points and ensuring it is inside all geojson polygons."""
     mid_lon = (position.LON_MIN + position.LON_MAX) / 2
     mid_lat = (position.LAT_MIN + position.LAT_MAX) / 2
 
     for lat in lat_points:
         for lon in lon_points:
+            # Check if the current point is within the radius of any specific points
+            within_radius = False
+            for spec_lat, spec_lon, _, _ in specific_points:
+                if haversine_distance(lat, lon, spec_lat, spec_lon) < radius / 1e3:
+                    within_radius = True
+                    break
+
+
+            point = Point(lon, lat)
+            # Check if the current point is inside any of the GeoJSON polygons
+            inside_list = []
+            for geojson in geojson_polygons:
+                inside_geojson = any(polygon.contains(point) for polygon in geojson)
+                if inside_geojson:
+                    inside_list.append(True)
+
+            inside = True if len(inside_list) == len(geojson_polygons) else False
+
+            if within_radius or not inside:
+                continue  # Skip this point if it falls within the radius or is not inside all polygons
+
+            # Add grid point marker
             folium.Marker(
                 [lat, lon],
                 popup=f"Lat: {lat:.6f}, Lon: {lon:.6f}",
                 icon=folium.Icon(color="blue", icon="info-sign")
             ).add_to(m)
 
-        folium.PolyLine([(lat, position.LON_MIN), (lat, position.LON_MAX)], color="blue", weight=1).add_to(m)
-        folium.Marker(
-            [lat, mid_lon],
-            icon=folium.DivIcon(
-                html=f'<div style="font-size: 12px; color: blue; margin-top: -10px;">Lat={lat:.6f}</div>')
-        ).add_to(m)
+        if grid:
+            # Add latitude grid line
+            folium.PolyLine([(lat, position.LON_MIN), (lat, position.LON_MAX)], color="blue", weight=1).add_to(m)
+            folium.Marker(
+                [lat, mid_lon],
+                icon=folium.DivIcon(
+                    html=f'<div style="font-size: 12px; color: blue; margin-top: -10px;">Lat={lat:.6f}</div>')
+            ).add_to(m)
 
-    for lon in lon_points:
-        folium.PolyLine([(position.LAT_MIN, lon), (position.LAT_MAX, lon)], color="green", weight=1).add_to(m)
-        folium.Marker(
-            [mid_lat, lon],
-            icon=folium.DivIcon(
-                html=f'<div style="font-size: 12px; color: green; transform: rotate(-90deg); margin-left: -10px;">Lon={lon:.6f}</div>')
-        ).add_to(m)
+            for lon in lon_points:
+                # Add longitude grid line
+                folium.PolyLine([(position.LAT_MIN, lon), (position.LAT_MAX, lon)], color="green", weight=1).add_to(m)
+                folium.Marker(
+                    [mid_lat, lon],
+                    icon=folium.DivIcon(
+                        html=f'<div style="font-size: 12px; color: green; transform: rotate(-90deg); margin-left: -10px;">Lon={lon:.6f}</div>')
+                ).add_to(m)
 
 
-def add_markers_and_lines(m):
+def add_markers_and_lines(m, radius):
     """Adds specific markers and lines between them to the map."""
     specific_points = [
         (46.15878834400968, -1.2718925504584946, "Enigme 1 chez Ré monde", 'fa-solid fa-1'),
@@ -107,13 +143,11 @@ def add_markers_and_lines(m):
         (43.12303479835759, 1.6946271347407884, "Enigme 7 Librairie Le Bleu du Ciel", 'fa-solid fa-7'),
         (47.35711347592077, 4.9650404744590455, "Enigme 8 La Porte du Diable", 'fa-solid fa-8'),
         (48.51271190767063, 7.164272246565264, "Enigme 9 Temple du Donon", 'fa-solid fa-9'),
-        (48.85653365477824, 2.348834898952895, "Enigme 10 Ile de France", 'fa-solid fa-a'),
+        (48.4148436, 2.6454519, "Enigme 10 Fontainebleau", 'fa-solid fa-a'),
         (47.39295503316493, 0.7253534677575671, "Enigme 11 Indre-et-Loire", 'fa-solid fa-b'),
         (48.01121029245369, -3.942390947484212, "Enigme 12 Bretagne", 'fa-solid fa-c'),
         (46.988458091474726, 6.936595661085478, "Enigme 13 Suisse", 'fa-solid fa-d'),
         (45.765560847282806, 4.828959507897815, "Enigme 14 Lyon", 'fa-solid fa-e'),
-
-
     ]
 
     for lat, lon, popup, icon in specific_points:
@@ -124,7 +158,7 @@ def add_markers_and_lines(m):
         ).add_to(m)
 
         folium.Circle(
-            radius=50000,  # Radius in meters
+            radius=radius,  # Radius in meters
             location=(lat, lon),
             color='red',
             fill=True,
@@ -140,10 +174,43 @@ def add_markers_and_lines(m):
             dash_array="5, 5",
         ).add_to(m)
 
+    return specific_points
+
+
+def add_geojson_to_map(m, geojson_file_path):
+    """Loads a GeoJSON file and adds it to the map."""
+    with open(geojson_file_path) as f:
+        geojson_data = json.load(f)
+    folium.GeoJson(
+        geojson_data,
+        name="geojson"
+    ).add_to(m)
+
+
+def load_geojson_polygons(geojson_file_paths):
+    """Loads multiple GeoJSON files and returns a list of Shapely polygons."""
+    if len(geojson_file_paths) != 0:
+        geojson_list = []
+
+        for geojson_file_path in geojson_file_paths:
+            polygons = []
+            with open(geojson_file_path) as f:
+                geojson_data = json.load(f)
+
+            for feature in geojson_data['features']:
+                polygons.append(shape(feature['geometry']))  # Convert the geometry into Shapely polygon
+
+            geojson_list.append(polygons)
+        return geojson_list
+    else:
+        return False
+
 
 def main():
     """Main function to generate the map with grid and specific markers."""
-    use_detailed_data = False
+    use_detailed_data = True
+    radius_m = 50000
+    grid = False
     position = get_position(use_detailed_data)
 
     lat_points, lon_points = calculate_grid_points(
@@ -153,12 +220,18 @@ def main():
     map_center = [(position.LAT_MIN + position.LAT_MAX) / 2, (position.LON_MIN + position.LON_MAX) / 2]
     m = initialize_map(map_center)
 
-    add_grid_to_map(m, lat_points, lon_points, position)
-    add_markers_and_lines(m)
+    # Get the specific points to check for exclusion
+    specific_points = add_markers_and_lines(m, radius_m)
+
+    # Add GeoJSON files
+    geojson_file_paths = ['./maps/myrtilles.geojson', './maps/forets_mixtes.geojson', './maps/sapins.geojson']
+    geojson_polygons = load_geojson_polygons(geojson_file_paths)
+
+    # Add grid points excluding those that fall within a 50 km radius of specific points and are inside all GeoJSON polygons
+    add_grid_to_map(m, lat_points, lon_points, position, specific_points, radius_m, geojson_polygons, grid)
 
     m.save("gnss_quantique.html")
-    print("The map with the grid and specific markers has been generated and saved as 'gnss_quantique.html'.")
-
+    print("The map with the filtered grid and specific markers has been generated and saved as 'gnss_quantique.html'.")
 
 if __name__ == "__main__":
     main()
