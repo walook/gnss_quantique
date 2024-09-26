@@ -7,8 +7,8 @@ from shapely.geometry import Point, shape
 
 class DetailedData:
     """Class representing the detailed search area."""
-    LAT_MIN = 45.027884
-    LAT_MAX = 49.927884
+    LAT_MIN = 44.527884
+    LAT_MAX = 49.527884
     LON_MIN = 0.086674
     LON_MAX = 8.986674
 
@@ -144,7 +144,7 @@ def add_markers_and_lines(m, radius):
         (47.35711347592077, 4.9650404744590455, "Enigme 8 La Porte du Diable", 'fa-solid fa-8'),
         (48.51271190767063, 7.164272246565264, "Enigme 9 Temple du Donon", 'fa-solid fa-9'),
         (48.4148436, 2.6454519, "Enigme 10 Fontainebleau", 'fa-solid fa-a'),
-        (47.39295503316493, 0.7253534677575671, "Enigme 11 Indre-et-Loire", 'fa-solid fa-b'),
+        (47.177596886009454, 0.9857289567475401, "Enigme 11 Sforza", 'fa-solid fa-b'),
         (48.01121029245369, -3.942390947484212, "Enigme 12 Bretagne", 'fa-solid fa-c'),
         (46.988458091474726, 6.936595661085478, "Enigme 13 Suisse", 'fa-solid fa-d'),
         (45.765560847282806, 4.828959507897815, "Enigme 14 Lyon", 'fa-solid fa-e'),
@@ -209,7 +209,7 @@ def load_geojson_polygons(geojson_file_paths):
 def main():
     """Main function to generate the map with grid and specific markers."""
     use_detailed_data = True
-    radius_m = 50000
+    radius_m = 1
     grid = False
     position = get_position(use_detailed_data)
 
@@ -224,7 +224,9 @@ def main():
     specific_points = add_markers_and_lines(m, radius_m)
 
     # Add GeoJSON files
-    geojson_file_paths = ['./maps/myrtilles.geojson', './maps/forets_mixtes.geojson', './maps/sapins.geojson']
+    # geojson_file_paths = ['./maps/france.geojson']
+    geojson_file_paths = ['./maps/france.geojson', './maps/forets_mixtes.geojson']
+    # geojson_file_paths = ['./maps/myrtilles.geojson', './maps/forets_mixtes.geojson', './maps/sapins.geojson', './maps/france.geojson']
     geojson_polygons = load_geojson_polygons(geojson_file_paths)
 
     # Add grid points excluding those that fall within a 50 km radius of specific points and are inside all GeoJSON polygons
